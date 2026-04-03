@@ -1,0 +1,96 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0d9b5;
+  font-family: sans-serif;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.error {
+  color: #c00;
+  font-size: 18px;
+  text-align: center;
+  padding: 40px;
+}
+
+canvas {
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.info {
+  color: #555;
+  font-size: 13px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.toolbar button:hover {
+  background: #eee;
+  border-color: #666;
+}
+
+.toolbar button.copied {
+  background: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+}
+
+.toolbar button svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.toolbar a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.toolbar a:hover {
+  background: #eee;
+  border-color: #666;
+}
+
+.toolbar a svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}

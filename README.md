@@ -1,23 +1,16 @@
-# Chinese Chess Board Viewer
+# Chess Board Viewer
 
-A single-page static site that renders a Chinese Chess (Xiangqi) board from a URL parameter.
+Static pages that render chess board positions from a URL parameter using FEN notation.
 
-## Usage
+## Pages
 
-Open `index.html` in a browser. Pass a FEN-like string via the `board` query parameter:
+### Xiangqi (Chinese Chess)
 
 ```
-index.html?board=rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR
+xiangqi.html?board=rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR
 ```
 
-If no `board` parameter is provided, the standard initial position is displayed.
-
-## Encoding Format
-
-The board is encoded as a FEN-like string — 10 rows from top (Black's back rank) to bottom (Red's back rank), separated by `/`.
-
-- Consecutive empty positions are collapsed into a digit `1`–`9`
-- Red pieces: uppercase letters; Black pieces: lowercase letters
+10 rows, 9 columns. Pieces rendered in traditional Chinese using [京華老宋体](https://github.com/frostming/jinghua-webfont) webfont.
 
 | Letter  | Red | Black | Piece             |
 |---------|-----|-------|-------------------|
@@ -29,11 +22,39 @@ The board is encoded as a FEN-like string — 10 rows from top (Black's back ran
 | `C`/`c` | 炮  | 砲    | Cannon            |
 | `P`/`p` | 兵  | 卒    | Pawn (Soldier)    |
 
-See [SKILL.md](SKILL.md) for the full encoding/decoding specification.
+### Chess (International)
 
-## Font
+```
+chess.html?board=rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+```
 
-Pieces are rendered using [京華老宋体 (Jinghua Old Song)](https://github.com/frostming/jinghua-webfont) webfont in traditional Chinese characters.
+8 rows, 8 columns. Pieces rendered as Unicode chess symbols.
+
+| Letter  | White | Black | Piece  |
+|---------|-------|-------|--------|
+| `K`/`k` | ♔    | ♚    | King   |
+| `Q`/`q` | ♕    | ♛    | Queen  |
+| `R`/`r` | ♖    | ♜    | Rook   |
+| `B`/`b` | ♗    | ♝    | Bishop |
+| `N`/`n` | ♘    | ♞    | Knight |
+| `P`/`p` | ♙    | ♟    | Pawn   |
+
+## Encoding
+
+Both pages use standard FEN notation: rows from top to bottom separated by `/`, with consecutive empty squares collapsed into digits `1`-`8` (or `1`-`9` for xiangqi). Uppercase = White/Red, lowercase = Black.
+
+If no `board` parameter is provided, the standard initial position is displayed.
+
+See [SKILL.md](SKILL.md) for the full xiangqi encoding/decoding specification.
+
+## Project Structure
+
+```
+css/common.css   - Shared layout styles
+js/common.js     - Shared FEN parsing and canvas utilities
+xiangqi.html     - Chinese Chess renderer
+chess.html       - International Chess renderer
+```
 
 ## License
 
