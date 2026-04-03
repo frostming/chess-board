@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chinese Chess Board</title>
+<style>
+@font-face {
+  font-family: 'Jinghua';
+  src: url(https://frostming.github.io/jinghua-webfont/css/京華老宋体v2.002.ttf) format('truetype');
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0d9b5;
+  font-family: sans-serif;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.error {
+  color: #c00;
+  font-size: 18px;
+  text-align: center;
+  padding: 40px;
+}
+
+canvas {
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.info {
+  color: #555;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <canvas id="board"></canvas>
+  <div class="info" id="info"></div>
+</div>
+<script>
+// Piece map: letter -> { name, color }
+const PIECE_MAP = {
+  K: { ch: '帥', color: 'red' },
+  k: { ch: '將', color: 'black' },
+  A: { ch: '仕', color: 'red' },
+  a: { ch: '士', color: 'black' },
+  B: { ch: '相', color: 'red' },
+  b: { ch: '象', color: 'black' },
+  N: { ch: '馬', color: 'red' },
+  n: { ch: '馬', color: 'black' },
+  R: { ch: '車', color: 'red' },
+  r: { ch: '車', color: 'black' },
+  C: { ch: '炮', color: 'red' },
+  c: { ch: '砲', color: 'black' },
+  P: { ch: '兵', color: 'red' },
+  p: { ch: '卒', color: 'black' },
+};
+
+function parseFEN(fen) {
+  const rows = fen.split('/');
+  if (rows.length !== 10) throw new Error(`Expected 10 rows, got ${rows.length}`);
+
+  const board = [];
+  for (let r = 0; r < 10; r++) {
+    const row = [];
+    for (const ch of rows[r]) {
+      if (ch >= '1' && ch <= '9') {
+        for (let i = 0; i < parseInt(ch); i++) row.push(null);
+      } else if (PIECE_MAP[ch]) {
+        row.push(ch);
+      } else {
+        throw new Error(`Unknown piece character: '${ch}'`);
+      }
+    }
+    if (row.length !== 9) throw new Error(`Row ${r} has ${row.length} columns, expected 9`);
+    board.push(row);
+  }
+  return board;
+}
+
+function drawBoard(board) {
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+
+  const cellSize = 64;
+  const padding = 40;
+  const cols = 9;
+  const rows = 10;
+  const w = (cols - 1) * cellSize + padding * 2;
+  const h = (rows - 1) * cellSize + padding * 2;
+
+  // Handle high DPI
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+
+  // Background
+  ctx.fillStyle = '#f0d9b5';
+  ctx.fillRect(0, 0, w, h);
+
+  // Draw grid
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+
+  function gx(col) { return padding + col * cellSize; }
+  function gy(row) { return padding + row * cellSize; }
+
+  // Horizontal lines
+  for (let r = 0; r < rows; r++) {
+    ctx.beginPath();
+    ctx.moveTo(gx(0), gy(r));
+    ctx.lineTo(gx(cols - 1), gy(r));
+    ctx.stroke();
+  }
+
+  // Vertical lines (with river gap for inner columns)
+  for (let c = 0; c < cols; c++) {
+    if (c === 0 || c === cols - 1) {
+      // Edge columns: full line
+      ctx.beginPath();
+      ctx.moveTo(gx(c), gy(0));
+      ctx.lineTo(gx(c), gy(rows - 1));
+      ctx.stroke();
+    } else {
+      // Inner columns: gap at river
+      ctx.beginPath();
+      ctx.moveTo(gx(c), gy(0));
+      ctx.lineTo(gx(c), gy(4));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(gx(c), gy(5));
+      ctx.lineTo(gx(c), gy(rows - 1));
+      ctx.stroke();
+    }
+  }
+
+  // Palace diagonals
+  ctx.beginPath();
+  ctx.moveTo(gx(3), gy(0)); ctx.lineTo(gx(5), gy(2));
+  ctx.moveTo(gx(5), gy(0)); ctx.lineTo(gx(3), gy(2));
+  ctx.moveTo(gx(3), gy(7)); ctx.lineTo(gx(5), gy(9));
+  ctx.moveTo(gx(5), gy(7)); ctx.lineTo(gx(3), gy(9));
+  ctx.stroke();
+
+  // River text
+  ctx.fillStyle = '#333';
+  ctx.font = `bold ${cellSize * 0.45}px "Jinghua", serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const riverY = (gy(4) + gy(5)) / 2;
+  ctx.fillText('楚 河', gx(1.5), riverY);
+  ctx.fillText('漢 界', gx(6.5), riverY);
+
+  // Draw pieces
+  const pieceRadius = cellSize * 0.42;
+
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 9; c++) {
+      const piece = board[r][c];
+      if (!piece) continue;
+      const info = PIECE_MAP[piece];
+      const x = gx(c);
+      const y = gy(r);
+
+      // Piece circle background
+      ctx.beginPath();
+      ctx.arc(x, y, pieceRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#fae6c0';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = info.color === 'red' ? '#c00' : '#222';
+      ctx.stroke();
+
+      // Inner ring
+      ctx.beginPath();
+      ctx.arc(x, y, pieceRadius - 4, 0, Math.PI * 2);
+      ctx.strokeStyle = info.color === 'red' ? '#c00' : '#222';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Piece text
+      ctx.fillStyle = info.color === 'red' ? '#c00' : '#222';
+      ctx.font = `bold ${cellSize * 0.42}px "Jinghua", "Noto Serif SC", "Songti SC", "SimSun", serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(info.ch, x, y + 1);
+    }
+  }
+}
+
+// Wait for Jinghua font to load before drawing
+function main() {
+  const params = new URLSearchParams(window.location.search);
+  const fen = params.get('board');
+
+  if (!fen) {
+    const defaultFEN = 'rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR';
+    try {
+      const board = parseFEN(defaultFEN);
+      drawBoard(board);
+      document.getElementById('info').textContent =
+        'Usage: ?board=rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR';
+    } catch (e) {
+      document.getElementById('info').innerHTML = `<span class="error">${e.message}</span>`;
+    }
+  } else {
+    try {
+      const board = parseFEN(decodeURIComponent(fen));
+      drawBoard(board);
+    } catch (e) {
+      document.getElementById('info').innerHTML = `<span class="error">Invalid board: ${e.message}</span>`;
+    }
+  }
+}
+
+document.fonts.ready.then(main);
+</script>
+</body>
+</html>
