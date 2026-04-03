@@ -33,6 +33,26 @@ function parseFEN(fen, pieceMap, expectedRows, expectedCols) {
 }
 
 /**
+ * Compute cell size and padding that fit within the viewport.
+ * @param {number} preferredSize - Ideal cell size in px
+ * @param {number} gridCells - Number of cells across (cols-1 for xiangqi, cols for chess)
+ * @param {number} preferredPadding - Ideal padding on each side in px
+ * @returns {{ cellSize: number, padding: number }}
+ */
+function responsiveLayout(preferredSize, gridCells, preferredPadding) {
+  var container = document.querySelector('.container');
+  var maxWidth = container ? container.clientWidth : window.innerWidth;
+  var needed = gridCells * preferredSize + preferredPadding * 2;
+  if (needed <= maxWidth) return { cellSize: preferredSize, padding: preferredPadding };
+  // Shrink padding first (min 12px), then shrink cellSize
+  var minPadding = 12;
+  var padding = Math.max(minPadding, Math.floor((maxWidth - gridCells * preferredSize) / 2));
+  if (padding > minPadding) return { cellSize: preferredSize, padding: padding };
+  var cellSize = Math.floor((maxWidth - minPadding * 2) / gridCells);
+  return { cellSize: cellSize, padding: minPadding };
+}
+
+/**
  * Set up a HiDPI canvas and return the 2D context.
  * @param {HTMLCanvasElement} canvas
  * @param {number} w - Logical width

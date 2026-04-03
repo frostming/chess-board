@@ -39,8 +39,9 @@ const PIECE_MAP = {
 
 function drawBoard(board) {
   const canvas = document.getElementById('board');
-  const cellSize = 64;
-  const padding = 40;
+  const layout = responsiveLayout(64, 8, 40);
+  const cellSize = layout.cellSize;
+  const padding = layout.padding;
   const cols = 9;
   const rows = 10;
   const w = (cols - 1) * cellSize + padding * 2;
