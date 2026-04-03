@@ -104,7 +104,7 @@ rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR
 ### URL
 
 ```
-xiangqi.html?board=<FEN_STRING>
+https://frostming.github.io/chess-board/xiangqi.html?board=<FEN_STRING>
 ```
 
 ---
@@ -157,7 +157,7 @@ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 ### URL
 
 ```
-chess.html?board=<FEN_STRING>
+https://frostming.github.io/chess-board/chess.html?board=<FEN_STRING>
 ```
 
 ---
